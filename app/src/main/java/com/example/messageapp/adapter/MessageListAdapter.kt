@@ -7,19 +7,48 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.messageapp.databinding.MessageListItemBinding
+import com.example.messageapp.databinding.SectionListItemBinding
 import com.example.messageapp.models.Message
 
-class MessageListAdapter  : PagingDataAdapter<Message, MessageListAdapter.MessageViewHolder>(NEWS_COMPARATOR) {
+class MessageListAdapter  : PagingDataAdapter<Message, RecyclerView.ViewHolder>(NEWS_COMPARATOR) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, p1: Int): MessageViewHolder {
-        val binding = MessageListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return MessageViewHolder(binding)
+    private val VIEW_ITEM = 1
+    private val VIEW_HEADER = 0
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+
+        lateinit var vh: RecyclerView.ViewHolder
+        if (viewType == VIEW_ITEM) {
+            val binding =
+                MessageListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            vh = MessageViewHolder(binding)
+        } else {
+            val binding =
+                SectionListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            vh = HeaderViewHolder(binding)
+        }
+
+        return vh
     }
 
-    override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val currentItem = getItem(position)
-        if (currentItem != null) {
-            holder.bind(currentItem)
+        if (currentItem != null && !currentItem.isHeader) {
+            (holder as MessageViewHolder).bind(currentItem)
+        } else {
+            (holder as HeaderViewHolder).bind(currentItem!!)
+        }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (getItem(position)!!.isHeader) VIEW_HEADER else VIEW_ITEM
+    }
+
+    class HeaderViewHolder(private val binding: SectionListItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(message: Message) {
+            binding.titleSection.text = message.header
         }
     }
 
@@ -28,9 +57,9 @@ class MessageListAdapter  : PagingDataAdapter<Message, MessageListAdapter.Messag
 
         fun bind(message: Message) {
             binding.apply {
-                if(!message.isHeader) {
-                    binding.message.text = message.body
-                }
+
+                binding.name.text = message.address
+                binding.description.text = message.body
 
                 itemView.setOnClickListener {
 //                    itemView.context.startActivity(
@@ -41,6 +70,7 @@ class MessageListAdapter  : PagingDataAdapter<Message, MessageListAdapter.Messag
             }
         }
     }
+
 
     companion object {
         private val NEWS_COMPARATOR = object : DiffUtil.ItemCallback<Message>() {
