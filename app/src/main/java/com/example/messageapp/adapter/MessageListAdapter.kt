@@ -6,9 +6,11 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.example.messageapp.activity.MessageDetailsActivity
 import com.example.messageapp.databinding.MessageListItemBinding
 import com.example.messageapp.databinding.SectionListItemBinding
 import com.example.messageapp.models.Message
+import com.google.gson.Gson
 
 class MessageListAdapter  : PagingDataAdapter<Message, RecyclerView.ViewHolder>(NEWS_COMPARATOR) {
 
@@ -60,12 +62,10 @@ class MessageListAdapter  : PagingDataAdapter<Message, RecyclerView.ViewHolder>(
 
                 binding.name.text = message.address
                 binding.description.text = message.body
-
-                itemView.setOnClickListener {
-//                    itemView.context.startActivity(
-////                        Intent(itemView.context, NewsDetailsActivity::class.java)
-////                            .putExtra("data", Gson().toJson(news))
-//                    )
+                itemView.setOnClickListener{
+                    itemView.context.startActivity(
+                        Intent( itemView.context, MessageDetailsActivity::class.java)
+                            .putExtra("data", Gson().toJson(message)))
                 }
             }
         }
