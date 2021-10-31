@@ -19,7 +19,7 @@ class MessageListViewModel @Inject constructor(
     private val repository: MessageRepository
 ) : ViewModel()  {
 
-    private val messageList = MutableLiveData<PagingData<Message>>()
+    val messageList = MutableLiveData<PagingData<Message>>()
 
      fun loadMessages() {
          viewModelScope.launch {
