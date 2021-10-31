@@ -13,19 +13,15 @@ import com.example.messageapp.databinding.ActivityMainBinding
 import com.example.messageapp.viewmodels.MessageListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.core.content.ContextCompat
-
 import androidx.core.app.ActivityCompat
-
-
-
-
 
 @AndroidEntryPoint
 class MessageListActivity : AppCompatActivity() {
 
     private val viewModel: MessageListViewModel by viewModels()
-    private lateinit var binding : ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
     val messageAdapter = MessageListAdapter()
     val REQUEST_PERMISSION_CODE = 1007
 
@@ -35,7 +31,7 @@ class MessageListActivity : AppCompatActivity() {
         setContentView(binding.root)
         initToolbar()
         initObservers()
-        if(isPermissionsGranted()) {
+        if (isPermissionsGranted()) {
             viewModel.loadMessages()
         } else {
             requestPermissions()
@@ -76,19 +72,30 @@ class MessageListActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        when(requestCode) {
+        when (requestCode) {
             REQUEST_PERMISSION_CODE -> {
-                viewModel.loadMessages()
+                if(grantResults.size > 0) {
+                    val readSmsGranted = grantResults[0] === PackageManager.PERMISSION_GRANTED
+                    if(readSmsGranted) {
+                        viewModel.loadMessages()
+                    } else {
+                        Toast.makeText(this, "Permission grant failed", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(this, "Permission grant failed", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 
     // Checking permission is enabled or not using function starts from here.
     fun isPermissionsGranted(): Boolean {
-        val read_sms_permission = ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_SMS)
+        val read_sms_permission =
+            ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_SMS)
         val send_sms_permission =
             ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.SEND_SMS)
-        val receive_sms_permission = ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.RECEIVE_SMS)
+        val receive_sms_permission =
+            ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.RECEIVE_SMS)
         return read_sms_permission == PackageManager.PERMISSION_GRANTED && send_sms_permission == PackageManager.PERMISSION_GRANTED && receive_sms_permission == PackageManager.PERMISSION_GRANTED
     }
 

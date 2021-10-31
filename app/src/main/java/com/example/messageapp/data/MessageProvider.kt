@@ -7,11 +7,17 @@ import android.provider.Telephony
 import android.text.format.DateFormat
 import android.text.format.DateUtils
 import com.example.messageapp.models.Message
+import com.example.messageapp.utils.Utils
 
 class MessageProvider(val context: Context) {
 
     private var resolver : ContentResolver = context.contentResolver
 
+    /**
+     * get List of Messages from content provide
+     * default items per page is 20
+     * @param position the offset from the query will start
+     */
     @SuppressLint("Range")
     fun getMessages(position: Int): List<Message>? {
 
@@ -23,20 +29,13 @@ class MessageProvider(val context: Context) {
                 val id = getString(getColumnIndex(Telephony.Sms._ID))
                 val address = getString(getColumnIndex(Telephony.Sms.ADDRESS))
                 val person = getString(getColumnIndex(Telephony.Sms.PERSON))
-                val date = formatDate(getString(getColumnIndex(Telephony.Sms.DATE)))
+                val date = Utils.formatDate(getString(getColumnIndex(Telephony.Sms.DATE)))
                 val dateHeader = formatDateHeader(getString(getColumnIndex(Telephony.Sms.DATE)))
                 val subject = getString(getColumnIndex(Telephony.Sms.SUBJECT))
                 val body = getString(getColumnIndex(Telephony.Sms.BODY))
                 val type = getString(getColumnIndex(Telephony.Sms.TYPE))
 
                 messageList.add(Message(id, address, person, date,dateHeader, type, subject, body))
-//                val type = when(Integer.parseInt(getString(getColumnIndex(Telephony.Sms.TYPE)))) {
-//                    Telephony.Sms.MESSAGE_TYPE_INBOX -> "Inbox"
-//                    Telephony.Sms.MESSAGE_TYPE_SENT -> "Sent"
-//                    Telephony.Sms.MESSAGE_TYPE_OUTBOX -> "Outbox"
-//                    else -> "Inbox"
-//                }
-
             }
             close()
         }
@@ -44,13 +43,12 @@ class MessageProvider(val context: Context) {
         return getMessageListWithHeader(messageList)
     }
 
+    /**
+     * get the header string from date in milli secs
+     */
     private fun formatDateHeader(date: String?): String? {
         return DateUtils.getRelativeTimeSpanString(date!!.toLong(), System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
             .toString()
-    }
-
-    private fun formatDate(date: String?): String? {
-        return DateFormat.format("dd/MM/yyyy hh:mm:ss", date!!.toLong()).toString()
     }
 
     private fun getMessageListWithHeader(messageList: MutableList<Message>): List<Message> {
@@ -70,7 +68,7 @@ class MessageProvider(val context: Context) {
         }
 
         hashMap.forEach{ (key, value) ->
-            val msg = Message(null, null, null, null, null, null, null, null, true, key)
+            val msg = Message(isHeader = true, header = key)
             result.add(msg)
             result.addAll(value)
         }
